@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}News Page{% endblock %}
+ {% block stylesheets %}
+     {{ encore_entry_link_tags('app') }}
+ {% endblock %}
+{% block body %}
+<h1>NEWS SITE</h1>
+
+<div>
+    <h2>Most Recent News: </h2>
+    <a style="text-decoration: none", href="{{ path('display_comments_statistics', {'period': 'day'})}}"><button>Статистика комментариев по дням</button></a>
+
+    <a style="text-decoration: none", href="{{ path('display_comments_statistics', {'period': 'month'})  }}"><button>Статистика комментариев по месяцам</button></a>
+    <a style="text-decoration: none", href="{{ path('display_counts')}}"><button>Подсчет буквы p в самой длинной новости с самым коротким комментарием</button></a>
+    <hr>
+    {% if list_of_news | length > 0 %}
+        {% for new in list_of_news %}
+            {% if new.newsTitle is defined %}
+            <h3>{{ new.newsTitle }}:</h3>
+            {% endif %}
+            <p>Author: {{ new.newsAuthor }}</p>
+            <p>Time: {{ new.createdAtDateAndTime | date('Y-m-d | H:i:s')}}</p>
+            <p>Description: {{ new.newsDescription | slice(0, 30) }}...<a href="{{ path(('display_each_new'), {newsId:new.id} )}}"><button>читать далее</button></a></p>
+
+            <hr>
+        {% endfor %}
+
+    {%  endif %}
+    <div>
+        {{ form(create_new_form) }}
+    </div>
+</div>
+
+{% endblock %}

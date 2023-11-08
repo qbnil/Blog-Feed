@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}News Page{% endblock %}
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+{% endblock %}
+{% block body %}
+
+    <header>
+        <nav>
+            <h1 style="text-align: center">{{ one_new.newsTitle }}:</h1>
+        </nav>
+    </header>
+    <div>
+            <p>Author: {{ one_new.newsAuthor }}</p>
+            <p>Time: {{ one_new.createdAtDateAndTime | date('Y-m-d | H:i:s') }}</p>
+            <p>Description: {{ one_new.newsDescription }}</p>
+            <hr>
+        <div>
+            <p>Previous Comments: </p>
+            {% if one_new.newsComments is defined %}
+                {% for comment_item in one_new.newsComments %}
+                <div id="comment-{{ comment_item.id }}">
+                    <p style="color: #5eb5e0">Comment Author: {{ comment_item.commentAuthor }}</p>
+                    <p  style="color: orangered">Commented At: {{ comment_item.commentDate | date('Y-m-d | H:i:s') }}</p>
+                    <p>What he wrote: {{ comment_item.commentContent }}</p>
+                    <button class="btn del-btn mb-3 btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" data-comment-id="{{ comment_item.id }}">
+                        Delete this comment
+                    </button>
+                </div>
+                {% endfor %}
+            {% endif %}
+            {{ form(comments_form) }}
+
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+    $(function () {
+    $('.del-btn').click(function (e) {
+        e.preventDefault();
+        const commentId = $(this).data('comment-id');
+        $.ajax({
+            type: 'POST',
+            url: '{{ path('delete_comment', {newsId: one_new.id}) }}',
+            data: {comment_id: commentId},
+            async: true,
+        })
+        .done(function(data) {
+            if(data.status = 200) {
+                $(this).remove();
+                $('#comment-' + commentId).remove();
+                alert(data.message);
+            }
+
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+            console.log(textStatus);
+            console.log(errorThrown);
+        });
+    });
+});
+    </script>
+{% endblock %}

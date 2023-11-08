@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  test3-php:
+    container_name: test3-Php
+    build:
+      context: ../.
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ../../:/var/www
+      - ../s6script/cont-init.d:/etc/cont-init.d
+      - ../s6script/cont-finish.d:/etc/cont-finish.d
+    ports:
+      - "8280:8080"
+      - "3100:3000"
+
+  test3-nginx:
+    image: nginx:latest
+    container_name: test3-nginx
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ../../:/var/www
+      - ../../certs:/etc/nginx/certs
+      - ../Configs/Dev/nginx.conf:/etc/nginx/conf.d/default.conf
+
+  test3-postgres:
+    image: library/postgres:10.14
+    container_name: testPostgres
+    environment:
+      POSTGRES_DB: "enter_point"
+      POSTGRES_USER: "root"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    ports:
+      - "54320:5432"
+    volumes:
+      - test_postgres_data10:/var/lib/postgresql/data10
+
+volumes:
+  test_postgres_data10: {}

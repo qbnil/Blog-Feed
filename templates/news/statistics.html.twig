@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div>
+    {% if period == 'month' %}
+        <h3>Comments statistics for each month of this year: </h3>
+        <a href="{{ path('display_comments_statistics', {'period': 'day'})}}"><button>To each day of the month statistics</button></a>
+        <a href="{{ path('all_the_news')}}"><button>To all the news</button></a>
+    {% set number_of_days = range(1, 12) %}
+    {% for j in number_of_days %}
+        {% if j in statistics|keys%}
+            <p>Number of comments for month({{ date('2023-' ~ j  ~ '-01') | date('M') }}) : {{ statistics[j] }}</p>
+        {% else %}
+            <p>Number of comments for month({{ date('2023-' ~ j ~ '-01') | date('M') }}) : 0</p>
+        {% endif %}
+    {% endfor %}
+</div>
+    {% else %}
+        <div>
+            <h3>The comment statistics for the current month - {{ 'NOW' | date('F') }}</h3>
+            <a href="{{ path('display_comments_statistics', {'period': 'month'})}}"><button>To each month of the current year statistics</button></a>
+            <a href="{{ path('all_the_news')}}"><button>To all the news</button></a>
+            {% set number_of_days = range(1, 'NOW'| date('t')) %}
+            {% for i in number_of_days %}
+                {% if i in statistics|keys %}
+                    <p>The {{ i }} of {{ 'NOW'|date('F') }} - {{ statistics[i] }} comments </p>
+                {% else %}
+                    <p>The {{ i }} of {{ 'NOW'|date('F') }} - 0 comments </p>
+                {% endif %}
+            {% endfor %}
+    {% endif %}
+
+        </div>
+
+
+
+{#   {% set i = 0 %}#}
+{#    {% for single_comment_collection in all_comments %}#}
+{#        {% if i == 0 %}#}
+{#            <p>Comments for this month ({{ "now" | date('F') }}):</p>#}
+{#            {% set i = 1 %}#}
+{#        {% endif %}#}
+
+{#        {% if single_comment_collection | length > 0 %}#}
+{#            {% for single_comment in single_comment_collection%}#}
+{#                {% if single_comment.commentDate | date('Y-m') == "now"|date("Y-m")  %}#}
+{#                    <p>{{ single_comment.commentDate | date('m') }} of {{ "now" | date('F') }}</p>#}
+{#                    <div>Comment Author: {{  single_comment.commentAuthor }}</div>#}
+{#                    <div>Comment Date: {{  single_comment.commentDate | date('Y-m-d | H:i:s') }}</div>#}
+{#                    <div>What he wrote: {{  single_comment.commentContent }}</div>#}
+{#                    <hr>#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+{#        {% else %}#}
+{#            <p>There are no comments for {{ "now" | date('F') }}</p>#}
+{#        {% endif %}#}
+{#    {% endfor %}#}
+
+{% endblock %}
