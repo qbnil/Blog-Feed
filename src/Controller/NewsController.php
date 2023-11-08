@@ -36,14 +36,12 @@ class NewsController extends AbstractController
     public function createNews(EntityManagerInterface $entityManager, Request $request): Response
     {
         $createNew = new News();
-        $tags = new Tags();
         $NewsForm = $this->createForm(AddNewsForm::class, $createNew);
         $NewsForm->handleRequest($request);
 
         if ($NewsForm->isSubmitted() && $NewsForm->isValid()) {
+
             $createNew->setCreatedAtDateAndTime(new \DateTime());
-            $tags->addNews($createNew);
-            $createNew->addCategory($tags->getTagName());
             $entityManager->persist($createNew);
             $entityManager->flush(); // Save changes
 

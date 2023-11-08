@@ -32,13 +32,10 @@ class News
     #[ORM\OneToMany(mappedBy: 'news', targetEntity: Comments::class, fetch: 'EAGER')]
     private Collection $newsComments;
 
-    #[ORM\ManyToMany(targetEntity: Tags::class, inversedBy: 'news')]
-    private Collection $tags;
-
     public function __construct()
     {
         $this->newsComments = new ArrayCollection();
-        $this->tags= new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,27 +123,4 @@ class News
         return $this;
     }
 
-    /**
-     * @return Collection<int, Tags>
-     */
-    public function getTags(): Collection
-    {
-        return $this->tags;
-    }
-
-    public function addCategory(Tags $tags): static
-    {
-        if (!$this->tags->contains($tags)) {
-            $this->tags->add($tags);
-        }
-
-        return $this;
-    }
-
-    public function removeCategory(Tags $tags): static
-    {
-        $this->tags->removeElement($tags);
-
-        return $this;
-    }
 }
