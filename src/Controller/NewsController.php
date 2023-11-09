@@ -15,8 +15,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\News;
 use DateTime;
-use App\Entity\Tags;
 use App\Repository\CommentsRepository;
+use App\Entity\Tags;
 
 
 class NewsController extends AbstractController
@@ -36,10 +36,20 @@ class NewsController extends AbstractController
     public function createNews(EntityManagerInterface $entityManager, Request $request): Response
     {
         $createNew = new News();
-        $NewsForm = $this->createForm(AddNewsForm::class, $createNew);
-        $NewsForm->handleRequest($request);
 
-        if ($NewsForm->isSubmitted() && $NewsForm->isValid()) {
+//        $tag1 = new Tags();
+//        $tag1->setTagName('tag1');
+//        $createNew->getTags()->add($tag1);
+//        $tag2 = new Tags();
+//        $tag2->setTagName('tag2');
+//        $createNew->getTags()->add($tag2);
+//
+
+        $newsForm= $this->createForm(AddNewsForm::class, $createNew);
+        $newsForm->handleRequest($request);
+
+//        dd($createNew->getTags());
+        if ($newsForm->isSubmitted() && $newsForm->isValid()) {
 
             $createNew->setCreatedAtDateAndTime(new \DateTime());
             $entityManager->persist($createNew);
@@ -50,8 +60,8 @@ class NewsController extends AbstractController
         $repository = $entityManager->getRepository(News::class);
         $allNews = $repository->findAll();
         return $this->render('news/news.html.twig', [
-            'create_new_form' => $NewsForm->createView(),
-            'list_of_news' => $allNews
+            'create_new_form' => $newsForm->createView(),
+            'list_of_news' => $allNews,
         ]);
     }
     #[Route('/{newsId<\d+>}', name: 'display_each_new')]

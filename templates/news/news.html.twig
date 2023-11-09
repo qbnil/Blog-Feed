@@ -28,7 +28,15 @@
 
     {%  endif %}
     <div>
-        {{ form(create_new_form) }}
+        {{ form_start(create_new_form) }}
+        <h3>Tags</h3>
+        <ul data-index="{{ create_new_form.tags|length > 0 ? create_new_form.tags|last.vars.name + 1 : 0 }}"
+             data-prototype="{{ form_widget(create_new_form.tags.vars.prototype)|e('html_attr') }}" class="tags">
+            {% for tag in create_new_form.tags%}
+                <li>{{ form_row(tag.tagName) }}</li>
+            {% endfor %}
+        </ul>
+        {{ form_end(create_new_form) }}
     </div>
 </div>
 
