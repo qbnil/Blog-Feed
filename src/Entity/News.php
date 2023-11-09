@@ -32,13 +32,12 @@ class News
     #[ORM\OneToMany(mappedBy: 'news', targetEntity: Comments::class, fetch: 'EAGER')]
     private Collection $newsComments;
 
-    #[ORM\ManyToMany(targetEntity: Tags::class, inversedBy: 'news', cascade: 'persist')]
+    #[ORM\ManyToMany(targetEntity: Tags::class, inversedBy: 'news')]
     private Collection $Tags;
 
     public function __construct()
     {
         $this->newsComments = new ArrayCollection();
-        $this->tags = new ArrayCollection();
         $this->Tags = new ArrayCollection();
     }
 

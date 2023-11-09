@@ -16,7 +16,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\News;
 use DateTime;
 use App\Repository\CommentsRepository;
-use App\Entity\Tags;
 
 
 class NewsController extends AbstractController
@@ -40,10 +39,10 @@ class NewsController extends AbstractController
 //        $tag1 = new Tags();
 //        $tag1->setTagName('tag1');
 //        $createNew->getTags()->add($tag1);
+
 //        $tag2 = new Tags();
 //        $tag2->setTagName('tag2');
 //        $createNew->getTags()->add($tag2);
-//
 
         $newsForm= $this->createForm(AddNewsForm::class, $createNew);
         $newsForm->handleRequest($request);

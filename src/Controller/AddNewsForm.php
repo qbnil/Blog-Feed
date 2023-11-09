@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controller;
 
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -10,9 +9,10 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use App\Entity\News;
+
 class AddNewsForm extends AbstractType
 {
-    public function buildForm(FormBuilderInterface  $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('newsAuthor', TextType::class);
         $builder->add('newsTitle', TextType::class);
@@ -32,7 +32,6 @@ class AddNewsForm extends AbstractType
             'required' => false,
         ]);
     }
-
 
 
 }
