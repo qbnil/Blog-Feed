@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\News;
+use App\Entity\Tags;
 use DateTime;
 use App\Repository\CommentsRepository;
 
@@ -30,32 +31,43 @@ class NewsController extends AbstractController
  * 6) When the tag is clicked the page should reload and display only the news that relate to that tag
  * 7) To all the news button (get back buttton)
  */
+
+
    // аттрибут для указания пути
     #[Route('/', name: 'all_the_news')]
     public function createNews(EntityManagerInterface $entityManager, Request $request): Response
     {
         $createNew = new News();
 
-//        $tag1 = new Tags();
-//        $tag1->setTagName('tag1');
-//        $createNew->getTags()->add($tag1);
-
-//        $tag2 = new Tags();
-//        $tag2->setTagName('tag2');
-//        $createNew->getTags()->add($tag2);
-
-        $newsForm= $this->createForm(AddNewsForm::class, $createNew);
+        $createNew->setCreatedAtDateAndTime(new \DateTime());
+        $newsForm = $this->createForm(AddNewsForm::class, $createNew);
         $newsForm->handleRequest($request);
 
-//        dd($createNew->getTags());
+
         if ($newsForm->isSubmitted() && $newsForm->isValid()) {
 
-            $createNew->setCreatedAtDateAndTime(new \DateTime());
-            $entityManager->persist($createNew);
+            $response = $request->request->get('add_news_form')['YourTags'];
+            $responseTags = explode(';', $response);
+            $tagsRepo = $entityManager->getRepository(Tags::class);
+            foreach($responseTags as $singleTag) {
+                $foundTag = $tagsRepo->findBy(['tagName'=>$singleTag]);
+                if(empty($foundTag)) {
+                    $tag = new Tags();
+                    $tag->setTagName($singleTag);
+                    $createNew->addTag($tag);
+                    $entityManager->persist($tag);
+                    $entityManager->persist($createNew);
+                }
+            }
+
             $entityManager->flush(); // Save changes
 
+            dd($createNew->getTags());
+
             return $this->redirect($request->getUri());
+
         }
+
         $repository = $entityManager->getRepository(News::class);
         $allNews = $repository->findAll();
         return $this->render('news/news.html.twig', [

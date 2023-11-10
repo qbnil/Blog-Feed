@@ -1,14 +1,12 @@
 <?php
 namespace App\Controller;
 
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use App\Entity\News;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class AddNewsForm extends AbstractType
 {
@@ -17,21 +15,8 @@ class AddNewsForm extends AbstractType
         $builder->add('newsAuthor', TextType::class);
         $builder->add('newsTitle', TextType::class);
         $builder->add('newsDescription', TextareaType::class);
-        $builder->add('tags', CollectionType::class, [
-            'entry_type' => TagType::class,
-            'entry_options' => ['label' => false],
-            'allow_add' => true,
-        ]);
+        $builder->add('YourTags', TextareaType::class, ['mapped' => false, 'constraints' => new Regex( pattern: '/\w+|(?!;$);/', message: 'Follow the pattern: tag1;tag2;tag3...', match: true), 'required' => false]);
         $builder->add('Submit', SubmitType::class, ['label' => 'Add new']);
     }
-
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'data_class' => News::class,
-            'required' => false,
-        ]);
-    }
-
 
 }
