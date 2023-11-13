@@ -39,6 +39,7 @@ class NewsController extends AbstractController
     {
         $createNew = new News();
 
+        $tagsRepo = $entityManager->getRepository(Tags::class);
         $createNew->setCreatedAtDateAndTime(new \DateTime());
         $newsForm = $this->createForm(AddNewsForm::class, $createNew);
         $newsForm->handleRequest($request);
@@ -47,22 +48,29 @@ class NewsController extends AbstractController
         if ($newsForm->isSubmitted() && $newsForm->isValid()) {
 
             $response = $request->request->get('add_news_form')['YourTags'];
-            $responseTags = explode(';', $response);
-            $tagsRepo = $entityManager->getRepository(Tags::class);
+            if($response[-1] == ';') {
+
+                $responseTags = preg_split("/;/", $response, flags: PREG_SPLIT_NO_EMPTY);
+            }
+            else {
+
+                $responseTags = explode(';', $response);
+            }
             foreach($responseTags as $singleTag) {
-                $foundTag = $tagsRepo->findBy(['tagName'=>$singleTag]);
+                $foundTag = $tagsRepo->findOneBy(['tagName'=>$singleTag]);
                 if(empty($foundTag)) {
                     $tag = new Tags();
                     $tag->setTagName($singleTag);
                     $createNew->addTag($tag);
                     $entityManager->persist($tag);
-                    $entityManager->persist($createNew);
                 }
+                else {
+                    $createNew->addTag($foundTag);
+                }
+                $entityManager->persist($createNew);
             }
 
             $entityManager->flush(); // Save changes
-
-            dd($createNew->getTags());
 
             return $this->redirect($request->getUri());
 
@@ -70,9 +78,23 @@ class NewsController extends AbstractController
 
         $repository = $entityManager->getRepository(News::class);
         $allNews = $repository->findAll();
+        $allTags = $tagsRepo->findAll();
         return $this->render('news/news.html.twig', [
             'create_new_form' => $newsForm->createView(),
             'list_of_news' => $allNews,
+            'tags' => $allTags,
+
+        ]);
+    }
+
+    #[Route('/', name: 'filtered_news')]
+    public function filteredNews(Request $request, EntityManagerInterface $entityManager) {
+        $selectedTag = $request->request->getAlpha('tag');
+        $tagRepo = $entityManager->getRepository(Tags::class);
+        $selectedTagObject = $tagRepo->findOneBy(['tagName' => $selectedTag]);
+        $newsforTag = $selectedTagObject->getNews();
+        return $this->render('news/news.html.twig', [
+            'list_of_news' => $newsforTag
         ]);
     }
     #[Route('/{newsId<\d+>}', name: 'display_each_new')]
