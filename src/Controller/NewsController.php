@@ -4,7 +4,6 @@
 namespace App\Controller;
 
 // импорты
-
 use App\Entity\Comments;
 use App\Repository\NewsRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,7 +16,6 @@ use App\Entity\News;
 use App\Entity\Tags;
 use DateTime;
 use App\Repository\CommentsRepository;
-
 
 class NewsController extends AbstractController
 {
@@ -56,21 +54,29 @@ class NewsController extends AbstractController
 
                 $responseTags = explode(';', $response);
             }
-            foreach($responseTags as $singleTag) {
-                $foundTag = $tagsRepo->findOneBy(['tagName'=>$singleTag]);
-                if(empty($foundTag)) {
+
+
+//            If the tag doesn't exist, a new Tag entity is created, associated with the News entity, and both are persisted.
+//    If the tag already exists, it's retrieved from the database, associated with the News entity, and no new Tag entity is created.
+
+            foreach ($responseTags as $singleTag) {
+                $foundTag = $tagsRepo->findOneBy(['tagName' => $singleTag]);
+
+                if (empty($foundTag)) {
                     $tag = new Tags();
                     $tag->setTagName($singleTag);
+
                     $createNew->addTag($tag);
+                    $tag->addNews($createNew);
                     $entityManager->persist($tag);
-                }
-                else {
+                    $entityManager->persist($createNew);
+
+                } else {
                     $createNew->addTag($foundTag);
                 }
-                $entityManager->persist($createNew);
             }
 
-            $entityManager->flush(); // Save changes
+            $entityManager->flush();
 
             return $this->redirect($request->getUri());
 
@@ -87,15 +93,13 @@ class NewsController extends AbstractController
         ]);
     }
 
-    #[Route('/', name: 'filtered_news')]
-    public function filteredNews(Request $request, EntityManagerInterface $entityManager) {
-        $selectedTag = $request->request->getAlpha('tag');
+    #[Route('/filter', name: 'filtered_news')]
+    public function filteredNews(Request $request, EntityManagerInterface $entityManager): JsonResponse {
+        $selectedTag = $request->query->get('tag_name');
         $tagRepo = $entityManager->getRepository(Tags::class);
         $selectedTagObject = $tagRepo->findOneBy(['tagName' => $selectedTag]);
-        $newsforTag = $selectedTagObject->getNews();
-        return $this->render('news/news.html.twig', [
-            'list_of_news' => $newsforTag
-        ]);
+        $neededNews = $selectedTagObject->getNews();
+        return new JsonResponse($this->renderView('news/filter.html.twig', ['news' => $neededNews]));
     }
     #[Route('/{newsId<\d+>}', name: 'display_each_new')]
     public function showNew(Request $request, $newsId, EntityManagerInterface $entityManager): Response
@@ -196,7 +200,12 @@ class NewsController extends AbstractController
         // Display longest new + it's shortest comment + count the number of 'p' letter occurrences
 
         $longestNewInfo = $newsRepository->getLongestNewAndShortestComm();
-        $pcount = !empty($longestNewInfo['news_comment']) ? count_chars($longestNewInfo['news_comment'], 1)[ord('p')] : 'There are no comments for this new yet';
+        if(isset($longestNewInfo)) {
+            $pcount = count_chars($longestNewInfo['news_comment'], 1)[ord('p')];
+        }
+        else {
+            $pcount = 'There are no comments for this new yet or there are no news at all';
+        }
 
         // Count the number of words of all the news for the last month
         $numberOfWords = 0;

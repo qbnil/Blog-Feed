@@ -27,7 +27,7 @@ class NewsRepository extends ServiceEntityRepository
  * 2) Pick the largest by descending order
  * 3) Return only the new that's on top aka has the largest numbers of chars
  */
-    public function getLongestNewAndShortestComm(): array
+    public function getLongestNewAndShortestComm(): array|null
     {
             return $this->createQueryBuilder('n')
             ->select('n.newsDescription as longest_new')
@@ -37,7 +37,7 @@ class NewsRepository extends ServiceEntityRepository
             ->addOrderBy('LENGTH(c.commentContent)')
             ->setMaxResults('1')
             ->getQuery()
-            ->getSingleResult();
+            ->getOneOrNullResult();
     }
 
 

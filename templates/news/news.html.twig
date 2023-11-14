@@ -11,11 +11,10 @@
     <a style="text-decoration: none", href="{{ path('display_comments_statistics', {'period': 'month'})  }}"><button>Статистика комментариев по месяцам</button></a>
     <a style="text-decoration: none", href="{{ path('display_counts')}}"><button>Подсчет буквы p в самой длинной новости с самым коротким комментарием</button></a>
     <hr>
-    <div class="news-block">
+    <div class="news-block ">
     {% if list_of_news | length > 0 %}
         {% for new in list_of_news %}
-            {% set var = 0 %}
-            <div class="{{ 'new-item-' ~ var}}">
+            <div class="new-item">
                 {% if new.newsTitle is defined %}
                 <h3>{{ new.newsTitle }}:</h3>
                 {% endif %}
@@ -24,11 +23,10 @@
                 <p>Description: {{ new.newsDescription | slice(0, 30) }}...<a href="{{ path(('display_each_new'), {newsId:new.id} )}}"><button>читать далее</button></a></p>
                 <p>Tags for this new:
                     {% for single_tag in new.tags %}
-                        <a href="{{ path('filtered_news', {'tags': single_tag.news}) }}"><button class ='filter-btn' data-tags-id='{{single_tag.id}}'>{{ single_tag.tagName }}</button></a>
+                        <a><button class='filter-btn' data-filter-id="{{single_tag.id}}">{{single_tag.tagName}}</button></a>
                     {% endfor %}
                 </p>
             </div>
-            {% set var = var + 1 %}
             <hr>
         {% endfor %}
     </div>
@@ -43,39 +41,32 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
-// hide all news which have tags with different ids
-// loop through all the existing news and their tags and hide all the
 
-    $(function () {
-        $('.filter-btn').click(function (e) {
-            e.preventDefault();
-            const selectedTag = $(this).text();
-
-            $.ajax({
-                url: '{{ path('filtered_news') }}',
-                type: 'POST',
-                data: { tag: selectedTag },
-                success: function() {
-                    console.log('Everything went alright')
-                },
-                error: function(error) {
-                    console.error('Error:', error);
-                }
+function ajaxEvent(selectedTag) {
+    $.ajax({
+        url: '{{ path('filtered_news') }}',
+        type: 'GET',
+        data: {'tag_name': selectedTag},
+        success: function(data) {
+            $('.news-block').html(data);
+            console.log($('.news-block').find('.filter-btn'))
+            $('.news-block').find('.filter-btn').click(function () {
+                const selectedTag = $(this).text();
+                ajaxEvent(selectedTag);
             });
-            $.ajax({
-                url: '{{ path('filtered_news') }}',
-                type: 'GET',
-                success: function(data) {
-                    console.log(data);
-                    $('.news-block').html('NONONO').show();
-                },
-                error: function(error) {
-                    console.error('Error:', error);
-                }
-            })
-
-        });
+        },
+        error: function(error) {
+            console.error('Error:', error);
+        }
     });
+}
+
+
+$('.filter-btn').click(function () {
+    const selectedTag = $(this).text();
+    ajaxEvent(selectedTag);
+});
+
 </script>
 {% endblock %}
 {% endblock %}

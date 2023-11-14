@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
 {% block body %}
 
-    <p><strong>The longest new</strong> - {{ new_info['longest_new'] }}</p>
-    {% if new_info['news_comment'] is not null %}
+    {% if new_info['news_comment'] is defined and new_info['longest_new'] is defined%}
+        <p><strong>The longest new</strong> - {{ new_info['longest_new'] }}</p>
         <p><strong>The shortest comment for this new is</strong> - {{ new_info['news_comment']}}</p>
     {%  else %}
-        <p><strong>The shortest comment for this new is</strong> - There are no comments for this new yet</p>
+        <p><strong>The longest new</strong> - No news or comments available</p>
     {% endif %}
     <p><strong>Number of letter p - </strong>{{ number_of_letter_p }}</p>
     <p><strong>Number of words of all news for the last month - </strong>{{ words_number }}</p>

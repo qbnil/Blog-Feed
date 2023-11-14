@@ -1,6 +1,15 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-
-
-
+    {% for new_item in news.iterator  %}
+        <h3>{{ new_item.newsTitle }}</h3>
+        <p>Author: {{ new_item.newsAuthor }}</p>
+        <p>Time: {{ new_item.createdAtDateAndTime | date('Y-m-d | H:i:s')}}</p>
+        <p>Description: {{ new_item.newsDescription | slice(0, 30) }}...<a href="{{ path(('display_each_new'), {newsId:new_item.id} )}}"><button>читать далее</button></a></p>
+        <p>Tags for this new:
+            {% for single_tag in new_item.tags.iterator %}
+                <a><button class="filter-btn">{{single_tag.tagName}}</button></a>
+            {% endfor %}
+        </p>
+        <hr>
+    {% endfor %}
 {% endblock %}
