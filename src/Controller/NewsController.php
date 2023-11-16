@@ -5,17 +5,19 @@ namespace App\Controller;
 
 // импорты
 use App\Entity\Comments;
+use App\Entity\News;
+use App\Entity\Tags;
+use App\Forms\AddNewsForm;
+use App\Forms\CommentsForm;
+use App\Repository\CommentsRepository;
 use App\Repository\NewsRepository;
+use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\News;
-use App\Entity\Tags;
-use DateTime;
-use App\Repository\CommentsRepository;
 
 class NewsController extends AbstractController
 {
@@ -35,10 +37,14 @@ class NewsController extends AbstractController
     #[Route('/', name: 'all_the_news')]
     public function createNews(EntityManagerInterface $entityManager, Request $request): Response
     {
+        // создаем инстанс класса News
         $createNew = new News();
 
-        $tagsRepo = $entityManager->getRepository(Tags::class);
+        // инициализация
         $createNew->setCreatedAtDateAndTime(new \DateTime());
+
+        // достаем класс репозитория Тэгов
+        $tagsRepo = $entityManager->getRepository(Tags::class);
         $newsForm = $this->createForm(AddNewsForm::class, $createNew);
         $newsForm->handleRequest($request);
 
@@ -56,8 +62,8 @@ class NewsController extends AbstractController
             }
 
 
-//            If the tag doesn't exist, a new Tag entity is created, associated with the News entity, and both are persisted.
-//    If the tag already exists, it's retrieved from the database, associated with the News entity, and no new Tag entity is created.
+// If the tag doesn't exist, a new Tag entity is created, associated with the News entity, and both are persisted.
+// If the tag already exists, it's retrieved from the database, associated with the News entity, and no new Tag entity is created.
 
             foreach ($responseTags as $singleTag) {
                 $foundTag = $tagsRepo->findOneBy(['tagName' => $singleTag]);
@@ -159,7 +165,7 @@ class NewsController extends AbstractController
 
         else {
             $parameters['time_from'] = $time->format('Y-m-01 00:00:00');
-            $parameters['time_to'] = $time->format('Y-m' . '-' .  cal_days_in_month(CAL_GREGORIAN, date('m'), date('Y')) . ' ' . '23:59:59');
+            $parameters['time_to'] = $time->format('Y-m' . '-' .  cal_days_in_month(CAL_GREGORIAN, date('m'), date('Y')));
             $formatType = 'j';
         }
 
@@ -201,7 +207,7 @@ class NewsController extends AbstractController
 
         $longestNewInfo = $newsRepository->getLongestNewAndShortestComm();
         if(isset($longestNewInfo)) {
-            $pcount = count_chars($longestNewInfo['news_comment'], 1)[ord('p')];
+            $pcount = substr_count($longestNewInfo['news_comment'], 'p');
         }
         else {
             $pcount = 'There are no comments for this new yet or there are no news at all';
