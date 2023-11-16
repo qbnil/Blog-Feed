@@ -37,13 +37,9 @@ class NewsController extends AbstractController
     #[Route('/', name: 'all_the_news')]
     public function createNews(EntityManagerInterface $entityManager, Request $request): Response
     {
-        // создаем инстанс класса News
-        $createNew = new News();
-
-        // инициализация
-        $createNew->setCreatedAtDateAndTime(new \DateTime());
-
-        // достаем класс репозитория Тэгов
+        $createNew  = new News();
+        $selectedTag = $request->query->get('tag_name');
+        $createNew->setCreatedAtDateAndTime(new \DateTime);
         $tagsRepo = $entityManager->getRepository(Tags::class);
         $newsForm = $this->createForm(AddNewsForm::class, $createNew);
         $newsForm->handleRequest($request);
@@ -52,11 +48,10 @@ class NewsController extends AbstractController
         if ($newsForm->isSubmitted() && $newsForm->isValid()) {
 
             $response = $request->request->get('add_news_form')['YourTags'];
-            if($response[-1] == ';') {
+            if ($response[-1] === ';') {
 
                 $responseTags = preg_split("/;/", $response, flags: PREG_SPLIT_NO_EMPTY);
-            }
-            else {
+            } else {
 
                 $responseTags = explode(';', $response);
             }
@@ -83,30 +78,25 @@ class NewsController extends AbstractController
             }
 
             $entityManager->flush();
-
             return $this->redirect($request->getUri());
-
         }
 
-        $repository = $entityManager->getRepository(News::class);
-        $allNews = $repository->findAll();
-        $allTags = $tagsRepo->findAll();
-        return $this->render('news/news.html.twig', [
-            'create_new_form' => $newsForm->createView(),
-            'list_of_news' => $allNews,
-            'tags' => $allTags,
+        if(isset($selectedTag)) {
+            $tagRepo = $entityManager->getRepository(Tags::class);
+            $selectedTagObject = $tagRepo->findOneBy(['tagName' => $selectedTag]);
+            $params = $selectedTagObject->getNews();
+        }
+        else {
+            $repository = $entityManager->getRepository(News::class);
+            $params = $repository->findAll();
+        }
 
+        return $this->render('news/news.html.twig', [
+            'params' => $params,
+            'create_new_form' => $newsForm->createView()
         ]);
     }
 
-    #[Route('/filter', name: 'filtered_news')]
-    public function filteredNews(Request $request, EntityManagerInterface $entityManager): JsonResponse {
-        $selectedTag = $request->query->get('tag_name');
-        $tagRepo = $entityManager->getRepository(Tags::class);
-        $selectedTagObject = $tagRepo->findOneBy(['tagName' => $selectedTag]);
-        $neededNews = $selectedTagObject->getNews();
-        return new JsonResponse($this->renderView('news/filter.html.twig', ['news' => $neededNews]));
-    }
     #[Route('/{newsId<\d+>}', name: 'display_each_new')]
     public function showNew(Request $request, $newsId, EntityManagerInterface $entityManager): Response
     {
@@ -229,7 +219,7 @@ class NewsController extends AbstractController
     }
 
     #[Route('/{newsId<\d+>}/delete-comment', name: 'delete_comment')]
-    public function commentDeletion(Request $request, EntityManagerInterface $entityManager): JsonResponse {
+    public function commentDeletion(Request $request, EntityManagerInterface $entityManager): JsonResponse{
         $commentId = $request->request->get('comment_id');
         try {
             $commentToDelete = $entityManager->getRepository(Comments::class)->find($commentId);

@@ -1,6 +1,5 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    {{  }}
     {% for new_item in news.iterator  %}
         <h3>{{ new_item.newsTitle }}</h3>
         <p>Author: {{ new_item.newsAuthor }}</p>

@@ -5,15 +5,16 @@
 <h1>NEWS SITE</h1>
 
 <div>
-    <h2>Most Recent News: </h2>
-    <a style="text-decoration: none", href="{{ path('display_comments_statistics', {'period': 'day'})}}"><button>Статистика комментариев по дням</button></a>
+    <div class="header">
+        <a style="text-decoration: none", href="{{ path('display_comments_statistics', {'period': 'day'})}}"><button>статистика комментариев по дням</button></a>
 
-    <a style="text-decoration: none", href="{{ path('display_comments_statistics', {'period': 'month'})  }}"><button>Статистика комментариев по месяцам</button></a>
-    <a style="text-decoration: none", href="{{ path('display_counts')}}"><button>Подсчет буквы p в самой длинной новости с самым коротким комментарием</button></a>
-    <hr>
-    <div class="news-block ">
-    {% if list_of_news | length > 0 %}
-        {% for new in list_of_news %}
+        <a style="text-decoration: none", href="{{ path('display_comments_statistics', {'period': 'month'})  }}"><button>статистика комментариев по месяцам</button></a>
+        <a style="text-decoration: none", href="{{ path('display_counts')}}"><button>подсчет буквы p в самой длинной новости с самым коротким комментарием</button></a>
+        <hr>
+        </div>
+    <div class="news-block">
+    {% if params | length > 0 %}
+        {% for new in params%}
             <div class="new-item">
                 {% if new.newsTitle is defined %}
                 <h3>{{ new.newsTitle }}:</h3>
@@ -23,7 +24,7 @@
                 <p>Description: {{ new.newsDescription | slice(0, 30) }}...<a href="{{ path(('display_each_new'), {newsId:new.id} )}}"><button>читать далее</button></a></p>
                 <p>Tags for this new:
                     {% for single_tag in new.tags %}
-                        <a><button class='filter-btn' data-filter-id="{{single_tag.id}}">{{single_tag.tagName}}</button></a>
+                        <a><button class='filter-btn'>{{single_tag.tagName}}</button></a>
                     {% endfor %}
                 </p>
             </div>
@@ -33,7 +34,7 @@
     {% else %}
         <h2>No news yet</h2>
     {%  endif %}
-    <div>
+    <div class="form-block">
        {{ form(create_new_form)}}
     </div>
 </div>
@@ -44,12 +45,15 @@
 
 function ajaxEvent(selectedTag) {
     $.ajax({
-        url: '{{ path('filtered_news') }}',
+        url: '{{ path('all_the_news') }}',
         type: 'GET',
         data: {'tag_name': selectedTag},
         success: function(data) {
+            $('.header').hide();
+            $('.form-block').hide();
+            $('h1').hide();
             $('.news-block').html(data);
-            console.log($('.news-block').find('.filter-btn'))
+            // console.log($('.news-block').find('.filter-btn'))
             $('.news-block').find('.filter-btn').click(function () {
                 const selectedTag = $(this).text();
                 ajaxEvent(selectedTag);
